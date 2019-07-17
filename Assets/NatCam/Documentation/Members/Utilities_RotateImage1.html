@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang='en-US'>
+    <head>
+        <!--Document title is project name-->
+        <title>NatCam Scripting Reference on Calligraphy</title>
+        <!--Extra information-->
+        <meta name='description' content='NatCam API documentation on Calligraphy'> <!--Populate from Calligraphy-->
+        <meta name='keywords' content='NatCam, Calligraphy, Unity'> <!--Populate from Calligraphy-->
+        <meta name='author' content='Calligraphy by Yusuf Olokoba'>
+        <meta charset='UTF-8'>
+        <!--Style sheet-->
+        <link rel='stylesheet' href='../Styles/memberstyles.css'>
+    </head>
+	
+	<body>
+        <h1 class='blockname'><a href='../Groups/Utilities.html'>Utilities</a>.RotateImage</h1>
+        <p1 class='faintname'>public static void RotateImage (Color32[] dst, Color32[] src, int width, int height, byte orientation)<b>;</b></p1>
+        <br>
+        <br>
+        <h2>Description</h2>
+        <p1>Rotate an image buffer.<br><br>The orientation parameter is equivalent to the Orientation struct.<br></p1>
+        <br>
+        <br>
+        
+        <!--Code example-->
+        <!--Must not be indented-->
+        <!--There must be no space between the text and the pre tags-->
+
+<code>
+<pre>
+Color32[] src = texture.GetPixels32(), dst = new Color32[src.length];
+Orientation orientation = Orientation.Rotation_90 | Orientation.Mirror;
+Utilities.RotateImage(dst, src, texture.width, texture.height, (byte)orientation);
+        </pre>
+</code>
+<br>
+        
+        
+        <!--See Also-->
+        
+        
+        <!--Copyright tag-->
+        <br>
+        <hr>
+        <p1 class='copyright'><small>Copyright (c) Yusuf Olokoba 2016</small></p1>
+        
+	</body>
+</html>        
+        

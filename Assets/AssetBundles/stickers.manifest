@@ -1,0 +1,16 @@
+ManifestFileVersion: 0
+CRC: 1403575938
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: c7f106a25e692133e35ea58f2e9a6aeb
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: c1642440719609290a7e09a50a7286f4
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+Assets:
+- Assets/Resources/Stickers/sticker_072.png
+Dependencies: []
