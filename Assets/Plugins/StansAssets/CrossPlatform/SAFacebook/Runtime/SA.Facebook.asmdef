@@ -1,0 +1,16 @@
+{
+    "name": "SA.Facebook",
+    "references": [
+        "SA.Foundation",
+        "SA.Foundation.Network"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}

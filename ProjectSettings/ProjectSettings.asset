@@ -166,7 +166,7 @@ PlayerSettings:
     tvOS: com.SneakawayStudio.NatCamTest1.5f3
   buildNumber:
     iPhone: 1
-  AndroidBundleVersionCode: 5
+  AndroidBundleVersionCode: 1
   AndroidMinSdkVersion: 18
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 2

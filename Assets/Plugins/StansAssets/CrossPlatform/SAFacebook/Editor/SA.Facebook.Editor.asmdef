@@ -1,0 +1,21 @@
+{
+    "name": "SA.Facebook.Editor",
+    "references": [
+        "SA.Facebook",
+        "SA.Foundation",
+        "SA.Foundation.Editor",
+        "SA.Android",
+        "SA.Android.Editor"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}

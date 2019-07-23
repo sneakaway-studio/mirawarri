@@ -1,0 +1,24 @@
+{
+    "name": "SA.CrossPlatform.Tests",
+    "references": [
+        "SA.CrossPlatform",
+        "SA.Android",
+        "SA.Foundation"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Android",
+        "Editor",
+        "iOS",
+        "tvOS"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": []
+}

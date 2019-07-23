@@ -1,0 +1,19 @@
+{
+    "name": "SA.CrossPlatform",
+    "references": [
+        "SA.Foundation",
+        "SA.iOS",
+        "SA.Android",
+        "SA.Android.Manifest",
+        "SA.Facebook"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}
