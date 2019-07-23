@@ -3,95 +3,104 @@
 *   Copyright (c) 2016 Yusuf Olokoba
 */
 
-namespace NatCamU.Examples {
+namespace NatCamU.Examples
+{
 
-	using UnityEngine;
-	using UnityEngine.UI;
-	using Core;
-	using Core.UI;
-	using Pro;
-	using System;
-	using System.Collections;
+    using UnityEngine;
+    using UnityEngine.UI;
+    using Core;
+    using Core.UI;
+    using Pro;
+    using System;
+    using System.Collections;
 
-	public class OwenMiniCam : NatCamBehaviour {
+    public class OwenMiniCam : NatCamBehaviour
+    {
 
-		[Header("UI")]
-		public NatCamPreview panel;
-		public NatCamFocuser focuser;
-		public Text flashText;
-		//      public Button switchCamButton, flashButton;
-		// public Image checkIco, flashIco;
-		protected Texture2D photo;
-		public FocusMode focusMode = FocusMode.AutoFocus | FocusMode.TapToFocus;
-
-
-		#region --Unity Messages--
-
-		public Text NeedsPhotoPermission;
-		int cameraPermission = 0;
+        [Header("UI")]
+        public NatCamPreview panel;
+        public NatCamFocuser focuser;
+        public Text flashText;
+        //      public Button switchCamButton, flashButton;
+        // public Image checkIco, flashIco;
+        protected Texture2D photo;
+        public FocusMode focusMode = FocusMode.AutoFocus | FocusMode.TapToFocus;
 
 
+        #region --Unity Messages--
 
-		// Use this for initialization
-		public override void Start () {
-			//Debug.Log ("OWEN: OwenMiniCam: Start() called");
-
-			if (!Application.HasUserAuthorization (UserAuthorization.WebCam)) {
-				// set UI Text photo prompt active
-				NeedsPhotoPermission.gameObject.SetActive (true);
-				// request camera use
-				Application.RequestUserAuthorization (UserAuthorization.WebCam);
-			} else {
-				// hide prompt
-				NeedsPhotoPermission.gameObject.SetActive (false);
-			}
-
-			// if we don't have permission, wait until we do 
-			while (cameraPermission != 1) {
-				// wait a sec
-				System.Threading.Thread.Sleep(2000);
-				// if user enables preference
-				if (Application.HasUserAuthorization (UserAuthorization.WebCam)) {
-					// hide UI Text photo prompt 
-					NeedsPhotoPermission.gameObject.SetActive (false);
-					// proceed to start app
-					cameraPermission = 1;
-				}
-			}
-
-
-			#if UNITY_ANDROID
-			SetRearAndroidResolution();
-			#endif
+        public Text NeedsPhotoPermission;
+        int cameraPermission = 0;
 
 
 
-			// Start base
-			base.Start ();
-		}
-		#endregion
+        // Use this for initialization
+        public override void Start()
+        {
+            Debug.Log("OWEN: OwenMiniCam: Start() called");
+
+            if (!Application.HasUserAuthorization(UserAuthorization.WebCam))
+            {
+                // set UI Text photo prompt active
+                NeedsPhotoPermission.gameObject.SetActive(true);
+                // request camera use
+                Application.RequestUserAuthorization(UserAuthorization.WebCam);
+            }
+            else
+            {
+                // hide prompt
+                NeedsPhotoPermission.gameObject.SetActive(false);
+            }
+
+            // if we don't have permission, wait until we do 
+            while (cameraPermission != 1)
+            {
+                // wait a sec
+                System.Threading.Thread.Sleep(2000);
+                // if user enables preference
+                if (Application.HasUserAuthorization(UserAuthorization.WebCam))
+                {
+                    // hide UI Text photo prompt 
+                    NeedsPhotoPermission.gameObject.SetActive(false);
+                    // proceed to start app
+                    cameraPermission = 1;
+                }
+            }
 
 
-		// only run this on rear camera on Android, didn't have the trouble on iOS
-		private void SetRearAndroidResolution(){
-			if (NatCam.Camera != DeviceCamera.RearCamera) return;
-			NatCam.Camera = DeviceCamera.RearCamera;
-//			Debug.Log ("##### INITIAL camera resolution = " + NatCam.Camera.PhotoResolution + " camera facing = " + NatCam.Camera.Facing);
+#if UNITY_ANDROID
+            SetRearAndroidResolution();
+#endif
 
 
 
-//			Debug.Log ("##### CALLING THIS: NatCam.Camera.SetPreviewResolution(1920, 1080);");
-//			Debug.Log ("##### THEN THIS: NatCam.Camera.SetPhotoResolution(ResolutionPreset.FullHD);");
-
-			// Set the preview resolution to Full HD
-			NatCam.Camera.SetPreviewResolution(1920, 1080);
-			// Set the photo resolution to highest
-			NatCam.Camera.SetPhotoResolution(ResolutionPreset.FullHD);
+            // Start base
+            base.Start();
+        }
+        #endregion
 
 
-			// BELOW DOESN'T WORK, ONLY THE ABOVE WORKS. FUCK IT. LEAVING AT FullHD
+        // only run this on rear camera on Android, didn't have the trouble on iOS
+        private void SetRearAndroidResolution()
+        {
+            if (NatCam.Camera != DeviceCamera.RearCamera) return;
+            NatCam.Camera = DeviceCamera.RearCamera;
+            //			Debug.Log ("##### INITIAL camera resolution = " + NatCam.Camera.PhotoResolution + " camera facing = " + NatCam.Camera.Facing);
 
-			/*
+
+
+            //			Debug.Log ("##### CALLING THIS: NatCam.Camera.SetPreviewResolution(1920, 1080);");
+            //			Debug.Log ("##### THEN THIS: NatCam.Camera.SetPhotoResolution(ResolutionPreset.FullHD);");
+
+            // Set the preview resolution to Full HD
+            NatCam.Camera.SetPreviewResolution(1920, 1080);
+            // Set the photo resolution to highest
+            NatCam.Camera.SetPhotoResolution(ResolutionPreset.FullHD);
+
+
+            // BELOW DOESN'T WORK, ONLY THE ABOVE WORKS. FUCK IT. LEAVING AT FullHD
+
+            /*
 			// horizontal, so change resolution -> if res is 1280:720 then 720 * (720 / 1280)
 			// Android (Samsung Galaxy A Tablet) rear = 2592, 1944 (.75)
 			int w = 0, h = 0;
@@ -105,113 +114,121 @@ namespace NatCamU.Examples {
 			NatCam.Camera.SetPhotoResolution(h,w);
 			*/
 
-//			Debug.Log ("##### AFTER CALL camera resolution = " + NatCam.Camera.PhotoResolution + " camera facing = " + NatCam.Camera.Facing);
+            //			Debug.Log ("##### AFTER CALL camera resolution = " + NatCam.Camera.PhotoResolution + " camera facing = " + NatCam.Camera.Facing);
 
-		}
-
-
-		private void OwenReport(){
-			string report = "";
-			// details about the device
-			report += "PhotoResolution = " + NatCam.Camera.PhotoResolution;
-			report += "; PreviewResolution = " + NatCam.Camera.PreviewResolution;
-			report += "; Facing = " + NatCam.Camera.Facing;
-			report += "; FlashMode = " + NatCam.Camera.FlashMode;
-			report += "; FocusMode = " + NatCam.Camera.FocusMode;
-			report += "; ZoomRatio = " + NatCam.Camera.ZoomRatio;
-			//report += "; Canvas.scaleFactor = " + canvas.scaleFactor;
-			//report += "; Canvas.pixelRect = " + canvas.pixelRect;
-			Debug.Log (report);
-		}
+        }
 
 
-
-		#region --NatCam and UI Callbacks--
-
-		public override void OnStart () {
-			// Display the preview
-			panel.Apply(NatCam.Preview);
-			// Start tracking focus gestures
-			//focuser.StartTracking();
-			var f = FocusMode.TapToFocus | FocusMode.AutoFocus;
-			focuser.StartTracking(f);
-
-			//OwenReport ();
-		}
-
-
-		public virtual void CapturePhoto () {
-			// Divert control if we are checking the captured photo
-			//if (!checkIco.gameObject.activeInHierarchy) NatCam.CapturePhoto(OnPhoto);
-			// Check captured photo
-			//else OnViewPhoto();
-
-			Debug.Log ("CapturePhoto() called, NatCam.Camera.PreviewResolution = " + NatCam.Camera.PreviewResolution);
-			NatCam.CapturePhoto(OnPhoto);
-		}
-
-		protected virtual void OnPhoto (Texture2D photo, Orientation orientation) {
+        private void OwenReport()
+        {
+            string report = "";
+            // details about the device
+            report += "PhotoResolution = " + NatCam.Camera.PhotoResolution;
+            report += "; PreviewResolution = " + NatCam.Camera.PreviewResolution;
+            report += "; Facing = " + NatCam.Camera.Facing;
+            report += "; FlashMode = " + NatCam.Camera.FlashMode;
+            report += "; FocusMode = " + NatCam.Camera.FocusMode;
+            report += "; ZoomRatio = " + NatCam.Camera.ZoomRatio;
+            //report += "; Canvas.scaleFactor = " + canvas.scaleFactor;
+            //report += "; Canvas.pixelRect = " + canvas.pixelRect;
+            Debug.Log(report);
+        }
 
 
-			Debug.Log ("OnPhoto() called, NatCam.Camera.PreviewResolution = " + NatCam.Camera.PreviewResolution);
 
-			// Cache the photo
-			this.photo = photo;
-			// Display the photo
-			panel.Apply(photo, orientation, Core.UI.ScaleMode.ScaleWidth);
+        #region --NatCam and UI Callbacks--
 
+        public override void OnStart()
+        {
+            // Display the preview
+            panel.Apply(NatCam.Preview);
+            // Start tracking focus gestures
+            //focuser.StartTracking();
+            var f = FocusMode.TapToFocus | FocusMode.AutoFocus;
+            focuser.StartTracking(f);
 
-			Debug.Log ("OnPhoto() called (post panel.Apply), NatCam.Camera.PreviewResolution = " + NatCam.Camera.PreviewResolution);
-
-			// Enable the check icon
-			//checkIco.gameObject.SetActive(true);
-			// Disable the switch camera button
-			//switchCamButton.gameObject.SetActive(false);
-			// Disable the flash button
-			//flashButton.gameObject.SetActive(false);
-		}
-		#endregion
+            //OwenReport ();
+        }
 
 
-		#region --UI Ops--
+        public virtual void CapturePhoto()
+        {
+            // Divert control if we are checking the captured photo
+            //if (!checkIco.gameObject.activeInHierarchy) NatCam.CapturePhoto(OnPhoto);
+            // Check captured photo
+            //else OnViewPhoto();
 
-		public void SwitchCamera () {
-			//Debug.Log ("SwitchCamera ()");
-			//Switch camera
-			base.SwitchCamera();
-			//Set the flash icon
-			//          SetFlashIcon();
+            Debug.Log("CapturePhoto() called, NatCam.Camera.PreviewResolution = " + NatCam.Camera.PreviewResolution);
+            NatCam.CapturePhoto(OnPhoto);
+        }
 
-			#if UNITY_ANDROID
-			SetRearAndroidResolution();
-			#endif
-		}
+        protected virtual void OnPhoto(Texture2D photo, Orientation orientation)
+        {
 
-		public void ToggleFlashMode () {
-			//Set the active camera's flash mode
-			NatCam.Camera.FlashMode = NatCam.Camera.IsFlashSupported ? NatCam.Camera.FlashMode == FlashMode.Auto ? FlashMode.On : NatCam.Camera.FlashMode == FlashMode.On ? FlashMode.Off : FlashMode.Auto : NatCam.Camera.FlashMode;
-			//Set the flash icon
-			//          SetFlashIcon();
-		}
 
-		public void ToggleTorchMode () {
-			//Set the active camera's torch mode
-//			NatCam.Camera.TorchMode = NatCam.Camera.TorchMode == Switch.Off ? Switch.On : Switch.Off;
-		}
+            Debug.Log("OnPhoto() called, NatCam.Camera.PreviewResolution = " + NatCam.Camera.PreviewResolution);
 
-		void OnViewPhoto (Texture2D photo, Orientation orientation) {
-			// Disable the check icon
-			//checkIco.gameObject.SetActive(false);
-			// Display the preview
-			panel.Apply(NatCam.Preview, orientation, Core.UI.ScaleMode.ScaleWidth);
-			// Enable the switch camera button
-			//          switchCamButton.gameObject.SetActive(true);
-			// Enable the flash button
-			//          flashButton.gameObject.SetActive(true);
-			// Free the photo texture
-			Texture2D.Destroy(photo); photo = null;
-		}
-		/*
+            // Cache the photo
+            this.photo = photo;
+            // Display the photo
+            panel.Apply(photo, orientation, Core.UI.ScaleMode.ScaleWidth);
+
+
+            Debug.Log("OnPhoto() called (post panel.Apply), NatCam.Camera.PreviewResolution = " + NatCam.Camera.PreviewResolution);
+
+            // Enable the check icon
+            //checkIco.gameObject.SetActive(true);
+            // Disable the switch camera button
+            //switchCamButton.gameObject.SetActive(false);
+            // Disable the flash button
+            //flashButton.gameObject.SetActive(false);
+        }
+        #endregion
+
+
+        #region --UI Ops--
+
+        public void SwitchCamera()
+        {
+            //Debug.Log ("SwitchCamera ()");
+            //Switch camera
+            base.SwitchCamera();
+            //Set the flash icon
+            //          SetFlashIcon();
+
+#if UNITY_ANDROID
+            SetRearAndroidResolution();
+#endif
+        }
+
+        public void ToggleFlashMode()
+        {
+            //Set the active camera's flash mode
+            NatCam.Camera.FlashMode = NatCam.Camera.IsFlashSupported ? NatCam.Camera.FlashMode == FlashMode.Auto ? FlashMode.On : NatCam.Camera.FlashMode == FlashMode.On ? FlashMode.Off : FlashMode.Auto : NatCam.Camera.FlashMode;
+            //Set the flash icon
+            //          SetFlashIcon();
+        }
+
+        public void ToggleTorchMode()
+        {
+            //Set the active camera's torch mode
+            //			NatCam.Camera.TorchMode = NatCam.Camera.TorchMode == Switch.Off ? Switch.On : Switch.Off;
+        }
+
+        void OnViewPhoto(Texture2D photo, Orientation orientation)
+        {
+            // Disable the check icon
+            //checkIco.gameObject.SetActive(false);
+            // Display the preview
+            panel.Apply(NatCam.Preview, orientation, Core.UI.ScaleMode.ScaleWidth);
+            // Enable the switch camera button
+            //          switchCamButton.gameObject.SetActive(true);
+            // Enable the flash button
+            //          flashButton.gameObject.SetActive(true);
+            // Free the photo texture
+            Texture2D.Destroy(photo); photo = null;
+        }
+        /*
 		void SetFlashIcon () {
 			//Null checking
 			if (!NatCam.Camera) return;
@@ -221,8 +238,8 @@ namespace NatCamU.Examples {
 			flashText.text = NatCam.Camera.IsFlashSupported && NatCam.Camera.FlashMode == FlashMode.Auto ? "A" : "";
 		}
 		*/
-		#endregion
-	}
+        #endregion
+    }
 }
 
 

@@ -24,7 +24,7 @@ using UnityEngine.Analytics;
 public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
 {
 
-    private static bool DEBUG = false;
+    private static bool DEBUG = true;
 
 
     public GameObject appController;
@@ -925,10 +925,10 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
         layers.Add(layer = Instantiate(
             stickerPrefab,
             Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, canvas.planeDistance)),
-            Quaternion.Euler(0f, 0f, rotation),
-            stickerPrefab.transform
+            Quaternion.Euler(0f, 0f, rotation)
+        //,stickerPrefab.transform
         ));
-        //if (DEBUG) Debug.Log ("layers.Count = " + layers.Count + " // layers["+ (layers.Count - 1) +"].name  = " + layers[  (layers.Count - 1)  ].name );
+        if (DEBUG) Debug.Log("layers.Count = " + layers.Count + " // layers[" + (layers.Count - 1) + "].name  = " + layers[(layers.Count - 1)].name);
 
         // rename sticker
         layer.name = "sticker_" + currentSticker.ToString("000");
@@ -1146,23 +1146,28 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
 	 */
     void SaveTextureToFile(Texture2D texture, string filename)
     {
-        Debug.Log("File saved at: " + filename);
+        Debug.Log("OWEN: File saved at: " + filename);
         System.IO.File.WriteAllBytes(filename, texture.EncodeToPNG());
     }
     public void SavePhoto()
     {
+        Debug.Log("OWEN: SavePhoto() called.");
+
         // get the texture
         Texture2D tex = sharePreview.GetComponent<RawImage>().texture as Texture2D;
 
         // for testing
         if (Application.isEditor)
         {
+            Debug.Log("OWEN: SavePhoto() -> Application.isEditor");
             SaveTextureToFile(tex, "texture_" + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".png");
             saveCheck.gameObject.SetActive(true);
             imageSaved = true;
         }
         else
         {
+            Debug.Log("OWEN: SavePhoto() -> else ...");
+
             // create gallery service
             // documentation: https://unionassets.com/ultimate-mobile-pro/save-to-gallery-748
             var galleryService = UM_Application.GalleryService;
@@ -1385,21 +1390,6 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
         ShareNative("twitter", tex);
 #endif
     }
-    // void HandleOnTwitterPostResult_IOS(SA.Common.Models.Result result)
-    // {
-    //     //Debug.Log ("HandleOnTwitterPostResult_IOS()");
-    //     if (result.IsSucceeded)
-    //     {
-    //         //Debug.Log ("HandleOnTwitterPostResult_IOS() --> result.IsSucceeded = "+ result.IsSucceeded);
-    //         IOSNativePopUpManager.showMessage("Post to Twitter", "Post Success!");
-    //         // show check
-    //         shareTwitterCheck.gameObject.SetActive(true);
-    //     }
-    //     else
-    //     {
-    //         //IOSNativePopUpManager.showMessage("Post to Twitter", "Post Failed :( Error code: " + result.Error.Code);
-    //     }
-    // }
 
 
     // SHARE: OTHER
@@ -1597,14 +1587,15 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
     // POPUP/DIALOG: User clicks Save Button on Share Screen > Receives notification they have to set this permission
     public void SavePhotoPermissionsCheck()
     {
-        //if (DEBUG) Debug.Log ("SavePhotoPermissionsCheck()");
+        if (DEBUG) Debug.Log("SavePhotoPermissionsCheck()");
 
         if (hasReceivedSavePermissionsNotification == 1 || Application.isEditor)
             SavePhoto();
         else
         {
             ShowNativeDialog("Saving requires gallery permissions",
-                "Please be sure to allow Mirawarri to access your photo album to save photos. You can change this in your device settings.", SavePhotoPermissionsCheckCallback);
+                "Please be sure to allow Mirawarri to access your photo album to save photos. You can change this in your device settings.",
+                SavePhotoPermissionsCheckCallback);
 
             hasReceivedSavePermissionsNotification = 1;
             PlayerPrefs.SetInt("hasReceivedSavePermissionsNotification", hasReceivedSavePermissionsNotification);

@@ -26,6 +26,7 @@ public class TextureDetails : IEquatable<TextureDetails>
 	public List<Object> FoundInAnimators = new List<Object>();
 	public List<Object> FoundInScripts = new List<Object>();
 	public List<Object> FoundInGraphics = new List<Object>();
+	public List<Object> FoundInButtons = new List<Object>();
 	public bool isSky;
 	public bool instance;
 	public bool isgui;
@@ -34,21 +35,21 @@ public class TextureDetails : IEquatable<TextureDetails>
 
 	}
 
-	public bool Equals(TextureDetails other)
-	{
-		return texture != null && other.texture != null &&
+    public bool Equals(TextureDetails other)
+    {
+        return texture != null && other.texture != null &&
 			texture.GetNativeTexturePtr() == other.texture.GetNativeTexturePtr();
-	}
+    }
 
-	public override int GetHashCode()
-	{
+    public override int GetHashCode()
+    {
 		return (int)texture.GetNativeTexturePtr();
-	}
+    }
 
-	public override bool Equals(object obj)
-	{
-		return Equals(obj as TextureDetails);
-	}
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as TextureDetails);
+    }
 };
 
 public class MaterialDetails
@@ -204,7 +205,7 @@ public class ResourceChecker : EditorWindow {
 			thingsMissing = false;
 			collectedInPlayingMode = Application.isPlaying;
 		}
-
+		
 		ActiveTextures.RemoveAll(x => !x.texture);
 		ActiveTextures.ForEach(delegate(TextureDetails obj) {
 			obj.FoundInAnimators.RemoveAll(x => !x);
@@ -275,19 +276,9 @@ public class ResourceChecker : EditorWindow {
 		case TextureFormat.PVRTC_RGBA4://	 PowerVR (iOS) 4 bits/pixel compressed with alpha channel texture format
 			return 4;
 		case TextureFormat.ETC_RGB4://	 ETC (GLES2.0) 4 bits/pixel compressed RGB texture format.
-			return 4;
-		case TextureFormat.ATC_RGB4://	 ATC (ATITC) 4 bits/pixel compressed RGB texture format.
-			return 4;
-		case TextureFormat.ATC_RGBA8://	 ATC (ATITC) 8 bits/pixel compressed RGB texture format.
-			return 8;
+			return 4;								
 		case TextureFormat.BGRA32://	 Format returned by iPhone camera
-			return 32;
-			#if !UNITY_5 && !UNITY_5_3_OR_NEWER
-			case TextureFormat.ATF_RGB_DXT1://	 Flash-specific RGB DXT1 compressed color texture format.
-			case TextureFormat.ATF_RGBA_JPG://	 Flash-specific RGBA JPG-compressed color texture format.
-			case TextureFormat.ATF_RGB_JPG://	 Flash-specific RGB JPG-compressed color texture format.
-			return 0; //Not supported yet  
-			#endif
+			return 32;			
 		}
 		return 0;
 	}
@@ -371,8 +362,7 @@ public class ResourceChecker : EditorWindow {
 		{			
 
 			GUILayout.BeginHorizontal ();
-			Texture tex = new Texture();
-			tex = tDetails.texture;
+			Texture tex =tDetails.texture;			
 			if(tDetails.texture.GetType() == typeof(Texture2DArray) || tDetails.texture.GetType() == typeof(Cubemap)){
 				tex = AssetPreview.GetMiniThumbnail(tDetails.texture);
 			}
@@ -407,6 +397,7 @@ public class ResourceChecker : EditorWindow {
 			foreach (Renderer renderer in tDetails.FoundInRenderers) FoundObjects.Add(renderer.gameObject);
 			foreach (Animator animator in tDetails.FoundInAnimators) FoundObjects.Add(animator.gameObject);
 			foreach (Graphic graphic in tDetails.FoundInGraphics) FoundObjects.Add(graphic.gameObject);
+			foreach (Button button in tDetails.FoundInButtons) FoundObjects.Add(button.gameObject);
 			foreach (MonoBehaviour script in tDetails.FoundInScripts) FoundObjects.Add(script.gameObject);
 			if (GUILayout.Button(FoundObjects.Count+" GO",GUILayout.Width(50)))
 			{
@@ -670,6 +661,14 @@ public class ResourceChecker : EditorWindow {
 					tMaterialDetails.FoundInGraphics.Add(graphic);
 				}
 			}
+
+			Button[] buttons = FindObjects<Button>();
+			foreach (Button button in buttons)
+			{
+				CheckButtonSpriteState(button, button.spriteState.disabledSprite);
+				CheckButtonSpriteState(button, button.spriteState.highlightedSprite);
+				CheckButtonSpriteState(button, button.spriteState.pressedSprite);
+			}
 		}
 
 		foreach (MaterialDetails tMaterialDetails in ActiveMaterials)
@@ -725,7 +724,10 @@ public class ResourceChecker : EditorWindow {
 				MissingObjects.Add (tMissing);
 				thingsMissing = true;
 			}
-			if (tMeshFilter.transform.GetComponent<MeshRenderer>().sharedMaterial == null) {
+
+			var meshRenderrer = tMeshFilter.transform.GetComponent<MeshRenderer>();
+				
+			if (meshRenderrer == null || meshRenderrer.sharedMaterial == null) {
 				MissingGraphic tMissing = new MissingGraphic ();
 				tMissing.Object = tMeshFilter.transform;
 				tMissing.type = "material";
@@ -784,52 +786,42 @@ public class ResourceChecker : EditorWindow {
 					continue;
 
 				for (int x = 0; x < anim.layerCount; x++)
-				{
-					#if UNITY_4_6 || UNITY_4_5 || UNITY_4_4 || UNITY_4_3
-					UnityEditorInternal.StateMachine sm = ac.GetLayer(x).stateMachine;
-					int cnt = sm.stateCount;
-					#elif UNITY_5 || UNITY_5_3_OR_NEWER
+				{										
 					UnityEditor.Animations.AnimatorStateMachine sm = ac.layers[x].stateMachine;
 					int cnt = sm.states.Length;
-					#endif
-
+					
 					for (int i = 0; i < cnt; i++)
-					{
-						#if UNITY_4_6 || UNITY_4_5 || UNITY_4_4 || UNITY_4_3
-						UnityEditorInternal.State state = sm.GetState(i);
-						Motion m = state.GetMotion();
-						#elif UNITY_5 || UNITY_5_3_OR_NEWER
+					{												
 						UnityEditor.Animations.AnimatorState state = sm.states[i].state;
-						Motion m = state.motion;
-						#endif
-						if (m != null)
+						Motion m = state.motion;						
+                        if (m != null)
 						{
 							AnimationClip clip = m as AnimationClip;
 
-							if (clip != null)
-							{
-								EditorCurveBinding[] ecbs = AnimationUtility.GetObjectReferenceCurveBindings(clip);
+						    if (clip != null)
+						    {
+						        EditorCurveBinding[] ecbs = AnimationUtility.GetObjectReferenceCurveBindings(clip);
 
-								foreach (EditorCurveBinding ecb in ecbs)
-								{
-									if (ecb.propertyName == "m_Sprite")
-									{
-										foreach (ObjectReferenceKeyframe keyframe in AnimationUtility.GetObjectReferenceCurve(clip, ecb))
-										{
-											Sprite tSprite = keyframe.value as Sprite;
+						        foreach (EditorCurveBinding ecb in ecbs)
+						        {
+						            if (ecb.propertyName == "m_Sprite")
+						            {
+						                foreach (ObjectReferenceKeyframe keyframe in AnimationUtility.GetObjectReferenceCurve(clip, ecb))
+						                {
+						                    Sprite tSprite = keyframe.value as Sprite;
 
-											if (tSprite != null)
-											{
-												var tTextureDetail = GetTextureDetail(tSprite.texture, anim);
-												if (!ActiveTextures.Contains(tTextureDetail))
-												{
-													ActiveTextures.Add(tTextureDetail);
-												}
-											}
-										}
-									}
-								}
-							}
+						                    if (tSprite != null)
+						                    {
+						                        var tTextureDetail = GetTextureDetail(tSprite.texture, anim);
+						                        if (!ActiveTextures.Contains(tTextureDetail))
+						                        {
+						                            ActiveTextures.Add(tTextureDetail);
+						                        }
+						                    }
+						                }
+						            }
+						        }
+						    }
 						}
 					}
 				}
@@ -920,24 +912,36 @@ public class ResourceChecker : EditorWindow {
 
 		// Sort by size, descending
 		ActiveTextures.Sort(delegate(TextureDetails details1, TextureDetails details2) { return details2.memSizeKB - details1.memSizeKB; });
-		ActiveTextures = ActiveTextures.Distinct().ToList();
+	    ActiveTextures = ActiveTextures.Distinct().ToList();
 		ActiveMeshDetails.Sort(delegate(MeshDetails details1, MeshDetails details2) { return details2.mesh.vertexCount - details1.mesh.vertexCount; });
 
 		collectedInPlayingMode = Application.isPlaying;
 	}
 
-	private static GameObject[] GetAllRootGameObjects()
+	private void CheckButtonSpriteState(Button button, Sprite sprite) 
 	{
-		#if !UNITY_5 && !UNITY_5_3_OR_NEWER
-		return UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects().ToArray();
-		#else
-		List<GameObject> allGo = new List<GameObject>();
-		for (int sceneIdx = 0; sceneIdx < UnityEngine.SceneManagement.SceneManager.sceneCount; ++sceneIdx){
-			allGo.AddRange( UnityEngine.SceneManagement.SceneManager.GetSceneAt(sceneIdx).GetRootGameObjects().ToArray() );
+		if (sprite == null) return;
+		
+		var texture = sprite.texture;
+		var tButtonTextureDetail = GetTextureDetail(texture, button);
+		if (!ActiveTextures.Contains(tButtonTextureDetail))
+		{
+			ActiveTextures.Add(tButtonTextureDetail);
 		}
-		return allGo.ToArray();
-		#endif
 	}
+	
+    private static GameObject[] GetAllRootGameObjects()
+    {
+#if !UNITY_5 && !UNITY_5_3_OR_NEWER
+        return UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects().ToArray();
+#else
+        List<GameObject> allGo = new List<GameObject>();
+        for (int sceneIdx = 0; sceneIdx < UnityEngine.SceneManagement.SceneManager.sceneCount; ++sceneIdx){
+            allGo.AddRange( UnityEngine.SceneManagement.SceneManager.GetSceneAt(sceneIdx).GetRootGameObjects().ToArray() );
+        }
+        return allGo.ToArray();
+#endif
+    }
 
 	private T[] FindObjects<T>() where T : Object
 	{
@@ -998,6 +1002,17 @@ public class ResourceChecker : EditorWindow {
 		TextureDetails tTextureDetails = GetTextureDetail(tTexture);
 
 		tTextureDetails.FoundInScripts.Add(script);
+		return tTextureDetails;
+	}
+
+	private TextureDetails GetTextureDetail(Texture tTexture, Button button) 
+	{
+		TextureDetails tTextureDetails = GetTextureDetail(tTexture);
+
+		if (!tTextureDetails.FoundInButtons.Contains(button))
+		{
+			tTextureDetails.FoundInButtons.Add(button);
+		}
 		return tTextureDetails;
 	}
 

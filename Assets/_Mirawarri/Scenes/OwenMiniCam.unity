@@ -2844,7 +2844,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &182090205
 RectTransform:
   m_ObjectHideFlags: 0
@@ -34301,6 +34301,8 @@ MonoBehaviour:
   flashText: {fileID: 0}
   focusMode: 1
   NeedsPhotoPermission: {fileID: 182090206}
+  appController: {fileID: 653156623}
+  nativeFunctions: {fileID: 653156626}
   stickerPrefab: {fileID: 1821205936000286, guid: 121d132a54f6847d0bcc21e1190cdfde,
     type: 3}
   paintingStickerPrefab: {fileID: 1821205936000286, guid: 7187061e254374826aa1d6d8f515fd61,
@@ -34370,7 +34372,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1913692315}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9c4bd6645eb2466f9465753e3520584, type: 3}
   m_Name: 
@@ -34385,7 +34387,7 @@ MonoBehaviour:
   focuser: {fileID: 187799909}
   flashText: {fileID: 0}
   focusMode: 3
-  NeedsPhotoPermission: {fileID: 0}
+  NeedsPhotoPermission: {fileID: 182090206}
 --- !u!1 &1934901516
 GameObject:
   m_ObjectHideFlags: 0
