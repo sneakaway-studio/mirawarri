@@ -575,12 +575,6 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
     // user loads from gallery
     public void LoadImageFromGallery()
     {
-#if UNITY_IOS
-		// add listener
-		IOSCamera.OnImagePicked += OnImageFromGallery_IOS;
-		IOSCamera.Instance.PickImage(ISN_ImageSource.Album);
-
-#elif UNITY_ANDROID
         // create new gallery service
         // documentation: https://unionassets.com/ultimate-mobile-pro/pick-from-gallery-749
         var galleryService = UM_Application.GalleryService;
@@ -615,27 +609,8 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
                 Debug.Log("failed to pick an image: " + result.Error.FullMessage);
             }
         });
-#endif
-
     }
 
-
-
-#if UNITY_IOS
-	// run after user picks image, before edit mode
-	private void OnImageFromGallery_IOS (IOSImagePickResult result) {
-		IOSCamera.OnImagePicked -= OnImageFromGallery_IOS; // unsubscribe
-		//if (DEBUG) Debug.Log ("OnImageFromGallery_IOS() called");
-		if(result.IsSucceeded) {
-			// display texture
-			preview.texture = result.Image;
-			// fix preview display aspect ratio
-			UpdatePreviewAspectRatio(0);
-			// at this point we have a texture in preview, so start crop
-			StartCropMode ();
-		}
-	}
-#endif
 
 
 
@@ -1342,70 +1317,35 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
     #region --Sharing--
 
     // SHARE: INSTAGRAM
-
     public void ShareInstagram()
     {
         //if (DEBUG) Debug.Log ("ShareInstagram()");
         // get texture
         Texture2D tex = sharePreview.GetComponent<RawImage>().texture as Texture2D;
-
-#if UNITY_IOS
-		IOSSocialManager.Instance.InstagramPost(tex, "#mirawarri");
-		// set callback
-		IOSSocialManager.OnInstagramPostResult += HandleOnInstagramPostResult_IOS;
-#elif UNITY_ANDROID
+        // call unified share function
         ShareNative("instagram", tex);
-#endif
     }
-    // callbacks
-#if UNITY_IOS
-	void HandleOnInstagramPostResult_IOS (SA.Common.Models.Result result){
-		if (result.Error.Code > 0) {
-			return;
-		} else if (result.IsSucceeded) {
-			shareInstagramCheck.gameObject.SetActive (true); // show check
-		} else {
-			//if (DEBUG) Debug.Log("Posting failed with error code " + result.ToString());
-		}
-	}
-#endif
-
 
     // SHARE: TWITTER
-
     // created a twitter app under my account: 
     // https://apps.twitter.com/app/14010996/
     public void ShareTwitter()
     {
         //Debug.Log ("ShareTwitter()");
-
         // get texture
         Texture2D tex = sharePreview.GetComponent<RawImage>().texture as Texture2D;
-
-#if UNITY_IOS
-		IOSSocialManager.Instance.TwitterPost("#mirawarri","http://grettalouw.com/mirawarri",  tex);
-		// set callback
-		// IOSSocialManager.OnTwitterPostResult += HandleOnTwitterPostResult_IOS;
-#elif UNITY_ANDROID
+        // call unified share function
         ShareNative("twitter", tex);
-#endif
     }
 
-
     // SHARE: OTHER
-
     public void ShareOther()
     {
         //if (DEBUG) Debug.Log ("ShareOther()");
         // get texture
         Texture2D tex = sharePreview.GetComponent<RawImage>().texture as Texture2D;
-
-#if UNITY_IOS
-		IOSSocialManager.Instance.ShareMedia(" #mirawarri", tex);
-#elif UNITY_ANDROID
+        // call unified share function
         ShareNative("other", tex);
-#endif
-
     }
 
 
@@ -1625,8 +1565,8 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
         string androidUrl = "market://details?id=" + Application.identifier;
 
 #if UNITY_IOS
-		// add listener
-		Application.OpenURL (appleUrl);
+        // add listener
+        Application.OpenURL(appleUrl);
 #elif UNITY_ANDROID
         Application.OpenURL(androidUrl);
 #endif
