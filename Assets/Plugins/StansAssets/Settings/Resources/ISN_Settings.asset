@@ -16,7 +16,7 @@ MonoBehaviour:
   Contacts: 0
   Photos: 0
   ReplayKit: 0
-  Social: 0
+  Social: 1
   AdSupport: 0
   AVKit: 0
   CoreLocation: 0

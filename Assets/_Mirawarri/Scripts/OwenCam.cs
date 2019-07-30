@@ -4,6 +4,8 @@ using SA.CrossPlatform.App;
 using SA.Foundation.Utility;
 using SA.CrossPlatform.Social;
 using SA.CrossPlatform.UI;
+using SA.iOS.Social;
+using SA.Foundation.Utility;
 
 using System;
 using System.Collections;
@@ -1316,26 +1318,83 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
 
     #region --Sharing--
 
+
+    string shareText = "#mirawarri";
+    string shareUrl = "http://grettalouw.com/mirawarri/";
+
+
+
     // SHARE: INSTAGRAM
     public void ShareInstagram()
     {
         //if (DEBUG) Debug.Log ("ShareInstagram()");
         // get texture
         Texture2D tex = sharePreview.GetComponent<RawImage>().texture as Texture2D;
-        // call unified share function
-        ShareNative("instagram", tex);
+#if UNITY_IOS
+        ISN_Instagram.Post(tex, (result) =>
+        {
+            if (result.IsSucceeded)
+            {
+                // Debug.Log("Post Success!");
+                shareInstagramCheck.gameObject.SetActive(true); // show check
+            }
+            else
+            {
+                Debug.Log("Post Failed! Error code: " + result.Error.Code);
+            }
+        });
+#elif UNITY_ANDROID
+        ShareAndroid("instagram",tex);
+#endif
+    }
+
+
+    // SHARE: FACEBOOK
+    public void ShareFacebook()
+    {
+        //if (DEBUG) Debug.Log ("ShareFacebook()");
+        // get texture
+        Texture2D tex = sharePreview.GetComponent<RawImage>().texture as Texture2D;
+#if UNITY_IOS
+        ISN_Facebook.Post(shareText, tex, (result) =>
+        {
+            if (result.IsSucceeded)
+            {
+                // Debug.Log("Post Success!");
+            }
+            else
+            {
+                Debug.Log("Post Failed! Error code: " + result.Error.Code);
+            }
+        });
+#elif UNITY_ANDROID
+        ShareAndroid("facebook",tex);
+#endif
     }
 
     // SHARE: TWITTER
-    // created a twitter app under my account: 
-    // https://apps.twitter.com/app/14010996/
+    // created a twitter app under my account: https://apps.twitter.com/app/14010996/
     public void ShareTwitter()
     {
         //Debug.Log ("ShareTwitter()");
         // get texture
         Texture2D tex = sharePreview.GetComponent<RawImage>().texture as Texture2D;
-        // call unified share function
-        ShareNative("twitter", tex);
+#if UNITY_IOS
+        ISN_Twitter.Post(shareText, shareUrl, tex, (result) =>
+        {
+            if (result.IsSucceeded)
+            {
+                // Debug.Log("Post Success!");
+                shareTwitterCheck.gameObject.SetActive(true); // show check
+            }
+            else
+            {
+                Debug.Log("Post Failed! Error code: " + result.Error.Code);
+            }
+        });
+#elif UNITY_ANDROID
+        ShareAndroid("twitter",tex);
+#endif
     }
 
     // SHARE: OTHER
@@ -1344,8 +1403,28 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
         //if (DEBUG) Debug.Log ("ShareOther()");
         // get texture
         Texture2D tex = sharePreview.GetComponent<RawImage>().texture as Texture2D;
-        // call unified share function
-        ShareNative("other", tex);
+#if UNITY_IOS
+        ISN_UIActivityViewController controller = new ISN_UIActivityViewController();
+        controller.SetText(shareText);
+        controller.AddImage(tex);
+        controller.Present((result) =>
+        {
+            if (result.IsSucceeded)
+            {
+                // Debug.Log("Completed: " + result.Completed);
+                // Debug.Log("ActivityType: " + result.ActivityType);
+                shareOtherCheck.gameObject.SetActive(true); // show check
+            }
+            else
+            {
+                Debug.Log("ISN_UIActivityViewController error: " + result.Error.FullMessage);
+            }
+            // not sure if I need this, from one of the examples
+            // SetAPIResult(result);
+        });
+#elif UNITY_ANDROID
+        ShareAndroid("other",tex);
+#endif
     }
 
 
@@ -1354,41 +1433,53 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
     // https://unionassets.com/ultimate-mobile-pro/native-sharing-740
     // https://unionassets.com/ultimate-mobile-pro/instagram-742
     // https://unionassets.com/ultimate-mobile-pro/twitter-743
-    void ShareNative(string service, Texture2D tex)
+    void ShareAndroid(string service, Texture2D tex)
     {
+        if (DEBUG) Debug.Log("ShareAndroid() 1 " + service);
+
         // create new sharing client
         var client = UM_SocialService.SharingClient;
         // create new dialog builder
         var builder = new UM_ShareDialogBuilder();
+        if (DEBUG) Debug.Log("ShareAndroid() 2 " + service);
         // set text and link (this may or may not work in FB and Insta)
-        builder.SetText("#mirawarri");
-        builder.SetUrl("http://grettalouw.com/mirawarri/");
+        builder.SetText(shareText);
+        builder.SetUrl(shareUrl);
         // add image
         builder.AddImage(tex);
 
+        if (DEBUG) Debug.Log("ShareAndroid() 3 " + service);
         if (service == "instagram")
         {
+            if (DEBUG) Debug.Log("ShareAndroid() 4 (instagram 1) ");
             client.ShareToInstagram(builder, (result) =>
             {
+                if (DEBUG) Debug.Log("ShareAndroid() 4 (instagram 2) ");
                 if (result.IsSucceeded)
                 {
+                    if (DEBUG) Debug.Log("ShareAndroid() 4 (instagram 3.1) ");
                     Debug.Log("Sharing started ");
                     shareInstagramCheck.gameObject.SetActive(true); // show check
                 }
                 else
                 {
+                    if (DEBUG) Debug.Log("ShareAndroid() 4 (instagram 3.2) ");
                     Debug.Log("Failed to share: " + result.Error.FullMessage);
                 }
             });
         }
-        else if (service == "instagram")
+        else if (service == "facebook")
+        {
+
+        }
+        else if (service == "twitter")
         {
             client.ShareToTwitter(builder, (result) =>
             {
                 if (result.IsSucceeded)
                 {
                     Debug.Log("Sharing started ");
-                    shareInstagramCheck.gameObject.SetActive(true); // show check
+                    shareTwitterCheck.gameObject.SetActive(true); // show check
                 }
                 else
                 {
@@ -1396,7 +1487,7 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
                 }
             });
         }
-        else
+        else if (service == "other")
         {
             client.SystemSharingDialog(builder, (result) =>
             {
@@ -1416,15 +1507,18 @@ public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
 
 
 
+
     #endregion // END SHARING
 
 
 
 
 
+
+
+
+
     #region --PopupsAndDialogs--
-
-
 
     /**
 	 * 	crossplatform popup/dialog
