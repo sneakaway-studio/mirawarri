@@ -165,7 +165,7 @@ PlayerSettings:
     iPhone: com.SneakawayStudio.Mirawarri
     tvOS: com.SneakawayStudio.NatCamTest1.5f3
   buildNumber:
-    iPhone: 1
+    iPhone: 2
   AndroidBundleVersionCode: 1
   AndroidMinSdkVersion: 18
   AndroidTargetSdkVersion: 0
@@ -630,7 +630,8 @@ PlayerSettings:
     13: NATCAM_15;NATCAM_CORE;NATCAM_EXTENDED;NATCAM_PROFESSIONAL;NATCAM_16
     14: NATCAM_15;NATCAM_CORE;NATCAM_EXTENDED;NATCAM_PROFESSIONAL;NATCAM_16
   platformArchitecture: {}
-  scriptingBackend: {}
+  scriptingBackend:
+    Android: 0
   il2cppCompilerConfiguration: {}
   managedStrippingLevel: {}
   incrementalIl2cppBuild: {}
