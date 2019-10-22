@@ -1,52 +1,88 @@
 ﻿/* 
-*   NatCam Core
-*   Copyright (c) 2016 Yusuf Olokoba
+*   NatCam
+*   Copyright (c) 2019 Yusuf Olokoba
 */
 
-namespace NatCamU.Examples {
+namespace NatCam.Examples
+{
 
     using UnityEngine;
+    using UnityEngine.EventSystems;
     using UnityEngine.UI;
-    using Core;
-    using Core.UI;
 
-    public class MiniCam : NatCamBehaviour {
-        
+    public class MiniCam : MonoBehaviour
+    {
+
+        [Header("Camera")]
+        public bool useFrontCamera;
+
         [Header("UI")]
-        public NatCamPreview panel;
-        public NatCamFocuser focuser;
+        public RawImage rawImage;
+        public AspectRatioFitter aspectFitter;
         public Text flashText;
         public Button switchCamButton, flashButton;
         public Image checkIco, flashIco;
+
+        private CameraDevice[] cameras;
+        private int activeCamera = -1;
+        private Texture previewTexture;
         private Texture2D photo;
 
 
         #region --Unity Messages--
 
         // Use this for initialization
-        public override void Start () {
-            // Start base
-            base.Start();
-            // Set the flash icon
-            SetFlashIcon();
+        private void Start()
+        {
+            // Check permission
+            cameras = CameraDevice.GetDevices();
+            if (cameras == null)
+            {
+                Debug.Log("User has not granted camera permission");
+                return;
+            }
+            // Pick camera
+            for (var i = 0; i < cameras.Length; i++)
+            {
+                Debug.Log(i + ". " + cameras[i]);
+                // if (cameras[i].IsFrontFacing == useFrontCamera)
+                // {
+                activeCamera = i;
+                break;
+                // }
+            }
+            if (activeCamera == -1)
+            {
+                Debug.LogError("Camera is null. Consider using " + (useFrontCamera ? "rear" : "front") + " camera");
+                return;
+            }
+            // Start preview
+            cameras[activeCamera].StartPreview(OnStart);
         }
         #endregion
 
-        
-        #region --NatCam and UI Callbacks--
 
-        public override void OnStart () {
+        #region --Callbacks--
+
+        private void OnStart(Texture preview)
+        {
             // Display the preview
-            panel.Apply(NatCam.Preview);
-            // Start tracking focus gestures
-            focuser.StartTracking();
+            previewTexture = preview;
+            rawImage.texture = preview;
+            aspectFitter.aspectRatio = preview.width / (float)preview.height;
+            // Set flash to auto
+            cameras[activeCamera].FlashMode = FlashMode.Auto;
+            UpdateFlashIcon();
         }
-        
-        protected virtual void OnPhoto (Texture2D photo, Orientation orientation) {
-            // Cache the photo
+
+        private void OnPhoto(Texture2D photo)
+        {
+            // Save the photo
             this.photo = photo;
             // Display the photo
-            panel.Apply(photo, orientation, Core.UI.ScaleMode.ScaleWidth);
+            rawImage.texture = photo;
+            // Scale the panel to match aspect ratios
+            aspectFitter.aspectRatio = photo.width / (float)photo.height;
             // Enable the check icon
             checkIco.gameObject.SetActive(true);
             // Disable the switch camera button
@@ -55,11 +91,14 @@ namespace NatCamU.Examples {
             flashButton.gameObject.SetActive(false);
         }
 
-        private void OnView () {
+        private void OnView()
+        {
             // Disable the check icon
             checkIco.gameObject.SetActive(false);
             // Display the preview
-            panel.Apply(NatCam.Preview, 0, Core.UI.ScaleMode.ScaleWidth);
+            rawImage.texture = previewTexture;
+            // Scale the panel to match aspect ratios
+            aspectFitter.aspectRatio = previewTexture.width / (float)previewTexture.height;
             // Enable the switch camera button
             switchCamButton.gameObject.SetActive(true);
             // Enable the flash button
@@ -68,47 +107,68 @@ namespace NatCamU.Examples {
             Texture2D.Destroy(photo); photo = null;
         }
         #endregion
-        
-        
+
+
         #region --UI Ops--
 
-        public virtual void CapturePhoto () {
+        public virtual void CapturePhoto()
+        {
             // Divert control if we are checking the captured photo
-            if (!checkIco.gameObject.activeInHierarchy) NatCam.CapturePhoto(OnPhoto);
+            if (!checkIco.gameObject.activeInHierarchy)
+                cameras[activeCamera].CapturePhoto(OnPhoto);
             // Check captured photo
             else OnView();
         }
-        
-        public void SwitchCamera () {
-            // Switch camera
-            base.SwitchCamera();
-            // Set the flash icon
-            SetFlashIcon();
-        }
-        
-        public void ToggleFlashMode () {
-            // Set the active camera's flash mode
-            NatCam.Camera.FlashMode = NatCam.Camera.IsFlashSupported ? NatCam.Camera.FlashMode == FlashMode.Auto ? FlashMode.On : NatCam.Camera.FlashMode == FlashMode.On ? FlashMode.Off : FlashMode.Auto : NatCam.Camera.FlashMode;
-            // Set the flash icon
-            SetFlashIcon();
+
+        public void SwitchCamera()
+        {
+            cameras[activeCamera].StopPreview();
+            activeCamera = (activeCamera + 1) % cameras.Length;
+            cameras[activeCamera].StartPreview(OnStart);
         }
 
-        public void ToggleTorchMode () {
-            // Set the active camera's torch mode
-            NatCam.Camera.TorchMode = NatCam.Camera.TorchMode == TorchMode.Off ? TorchMode.On : TorchMode.Off;
+        public void ToggleFlashMode()
+        {
+            // Set the active camera's flash mode
+            if (cameras[activeCamera].IsFlashSupported)
+                switch (cameras[activeCamera].FlashMode)
+                {
+                    case FlashMode.Auto: cameras[activeCamera].FlashMode = FlashMode.On; break;
+                    case FlashMode.On: cameras[activeCamera].FlashMode = FlashMode.Off; break;
+                    case FlashMode.Off: cameras[activeCamera].FlashMode = FlashMode.Auto; break;
+                }
+            // Set the flash icon
+            UpdateFlashIcon();
+        }
+
+        public void FocusCamera(BaseEventData e)
+        {
+            // Get the touch position in viewport coordinates
+            var eventData = e as PointerEventData;
+            RectTransform transform = eventData.pointerPress.GetComponent<RectTransform>();
+            Vector3 worldPoint;
+            if (!RectTransformUtility.ScreenPointToWorldPointInRectangle(transform, eventData.pressPosition, eventData.pressEventCamera, out worldPoint))
+                return;
+            var corners = new Vector3[4];
+            transform.GetWorldCorners(corners);
+            var point = worldPoint - corners[0];
+            var size = new Vector2(corners[3].x, corners[1].y) - (Vector2)corners[0];
+            Vector2 relativePoint = new Vector2(point.x / size.x, point.y / size.y);
+            // Set the focus point
+            cameras[activeCamera].FocusPoint = relativePoint;
         }
         #endregion
 
 
         #region --Utility--
-        
-        private void SetFlashIcon () {
-            // Null checking
-            if (!NatCam.Camera) return;
+
+        private void UpdateFlashIcon()
+        {
             // Set the icon
-            flashIco.color = !NatCam.Camera.IsFlashSupported || NatCam.Camera.FlashMode == FlashMode.Off ? (Color)new Color32(120, 120, 120, 255) : Color.white;
+            bool supported = cameras[activeCamera].IsFlashSupported;
+            flashIco.color = !supported || cameras[activeCamera].FlashMode == FlashMode.Off ? (Color)new Color32(120, 120, 120, 255) : Color.white;
             // Set the auto text for flash
-            flashText.text = NatCam.Camera.IsFlashSupported && NatCam.Camera.FlashMode == FlashMode.Auto ? "A" : "";
+            flashText.text = supported && cameras[activeCamera].FlashMode == FlashMode.Auto ? "A" : "";
         }
         #endregion
     }

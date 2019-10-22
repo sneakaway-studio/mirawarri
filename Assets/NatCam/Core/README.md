@@ -1,84 +1,70 @@
-# NatCam Core
-NatCam Core provides a clean, functional, and amazingly performant API for accessing and controlling device cameras. NatCam is built on platform-specific implementations of the NatCam Specification (`INatCam` and `INatCamDevice` interfaces).
+# NatCam API
+NatCam provides a clean, functional, and extremely performant API for accessing and controlling device cameras. The API is designed to be device camera-oriented. Hence all operations--whether it be introspection, running the preview, or capturing a photo--happen directly on `CameraDevice` instances.
 
-Using NatCam is as simple as calling:
+Using NatCam is as simple as acquiring a camera device and using it:
 ```csharp
-NatCam.Play(DeviceCamera.RearCamera);
+var cameraDevice = CameraDevice.GetDevices()[0];
+cameraDevice.StartPreview(OnStart);
 ```
 
-The preview is started and the preview texture becomes available in the `NatCam.OnStart` event. This event is usually used to display the preview texture on a surface:
+The camera starts running and the client-provided callback is invoked with the preview texture:
 ```csharp
-NatCam.OnStart += () => material.mainTexture = NatCam.Preview;
-```
-
-NatCam features a full camera control pipeline for utilizing camera functionality such as focusing, zooming, exposure, and so on. To use this functionality, simply access the properties in the DeviceCamera class:
-```csharp
-DeviceCamera.RearCamera.ExposureBias = 1.3;
-```
-
-Cameras can be set as active using the `NatCam.Camera` property. When a camera is active, calls to `NatCam.Play` would cause the preview to start from that camera. When NatCam is playing, the active camera can be switched by setting `NatCam.Camera` to a different camera. This will automatically start the preview from the newly set camera (so there is no need to call `NatCam.Play`).
-```csharp
-// Switch cameras while the preview is playing
-NatCam.Camera = DeviceCamera.FrontCamera;
-```
-
-NatCam also allows for high-resolution photo capture from the camera. To do so, simply call the `CapturePhoto` function with an appropriate callback and an orientation container (since the photo is not corrected for app orientation):
-```csharp
-NatCam.CapturePhoto(OnPhoto);
-
-void OnPhoto (Texture2D photo, Orientation orientation) {
-    // Do stuff...
-    Texture2D.Destroy(photo); // Remember to release the texture so as to avoid memory leak
+void OnStart (Texture2D preview) {
+    // Display the camera preview on a RawImage
+    rawImage.texture = preview;
 }
 ```
 
-When taking photos on iOS and Android, you might notice that the captured photo is rotated. This is because mobile cameras always return photos in their 'natural' orientation, landscape left. As a result, you must correct for this rotation if you want to display it or use if for other purposes.
-
-If you wish to display the captured photo, you can use the `NatCamPreview` component in the `NatCamU.Core.UI` namespace to correct for the rotation. Simply apply the component on a RawImage and call `Apply` with the captured photo and returned orientation:
+## Camera Control
+NatCam features a full camera control pipeline for utilizing camera functionality such as focusing, zooming, exposure, and so on. All these properties are in the `CameraDevice` class. For example:
 ```csharp
-public NatCamPreview previewPanel; // Reference this in the Editor
+cameraDevice.ExposureBias = 1.3f;
+```
 
-void OnPhoto (Texture2D photo, Orientation orientation) {
-    // Display the photo with the correct orientation
-    previewPanel.Apply(photo, orientation);
+## Capturing Photos
+NatCam also allows for high-resolution photo capture from the camera. To do so, simply call the `CapturePhoto` method with an appropriate callback to accept the photo texture:
+```csharp
+cameraDevice.CapturePhoto(OnPhoto);
+
+void OnPhoto (Texture2D photo) {
+    // Do stuff with the photo...
+    ...
+    // Remember to release the texture when you are done with it so as to avoid memory leak
+    Texture2D.Destroy(photo); 
 }
 ```
 
-I should note that `NatCamPreview` does not actually rotate the image to be upright; *it only displays it upright*. If you would like to physically rotate the image, then you can use the `Utilities.RotateImage` API's in the `NatCamU.Core.Utilities` namespace:
+## Using NatCam with OpenCV
+NatCam supports OpenCV with the [OpenCVForUnity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088) package. Check out the [official examples](https://github.com/EnoxSoftware/NatCamWithOpenCVForUnityExample). Using NatCam with OpenCV is pretty easy. On every frame, simply copy the preview texture into an `OpenCVForUnity.Mat`:
 ```csharp
-void OnPhoto (Texture2D photo, Orientation orientation) {
-    // Physically rotate the image
-    Utilities.RotateImage(texture, orientation, null, null, (Texture2D rotated, Orientation orientation) => {
-        // Display the rotated photo
-        preview.texture = rotated;
-    });
+void Update () {
+    // Create a matrix
+    var previewMatrix = new Mat(previewTexture.height, previewTexture.width, CvType.CV_8UC4);
+    // Copy the preview data into the matrix
+    Utils.fastTexture2DToMat(previewTexture, previewMatrix);
+    // Use the preview matrix
+    // ...
 }
 ```
 
 ___
 
-With the simplicity of NatCam Core, you have the power and speed to create interactive, responsive camera apps. Happy coding!
+With the simplicity of NatCam, you have the power and speed to create interactive, responsive camera apps. Happy coding!
 
 ## Requirements
-- On iOS, NatCam Core requires iOS 7 and up (it requires iOS 8 if you use `DeviceCamera.ExposureBias`).
-- On Android, NatCam Core requires API level 18 and up.
+- Unity 2017.1+
+- Android API level 21+
+- iOS 11+
 
 ## Tutorials
 1. [Starting Off](https://medium.com/@olokobayusuf/natcam-tutorial-series-1-starting-off-dc3990f5dab6)
 2. [Controls](https://medium.com/@olokobayusuf/natcam-tutorial-series-2-controls-d2e2d0738223)
 3. [Photos](https://medium.com/@olokobayusuf/natcam-tutorial-series-3-photos-e28361b83cf8)
-4. [Goodies](https://medium.com/@olokobayusuf/natcam-tutorial-series-x-goodies-3f4dcfac555b)
-5. [MoodCam VR]()
-
-## Notes
-- On Android, Unity automatically requests camera permissions on app start. This cannot be changed without modifying Unity Android natively.
-- On iOS, camera permissions are requested the first time the camera is opened.
 
 ## Quick Tips
-- Please peruse the included scripting reference under NatCam>Scripting Reference in the Editor. You can also find the docs [here](http://docs.natcam.io).
+- Please peruse the included scripting reference in the `Docs` folder.
 - To discuss or report an issue, visit Unity forums [here](http://forum.unity3d.com/threads/natcam-device-camera-api.374690/).
 - Check out more NatCam examples on Github [here](https://github.com/olokobayusuf?tab=repositories).
 - Contact me at [olokobayusuf@gmail.com](mailto:olokobayusuf@gmail.com).
-- See video tutorials [here](https://www.youtube.com/watch?v=6thfRz9vkyM&list=PL993yBWYjPgCiIkUlM3DJhOdcXNm9IVXh).
 
 Thank you very much!

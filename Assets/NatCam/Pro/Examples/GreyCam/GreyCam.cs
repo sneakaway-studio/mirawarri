@@ -1,77 +1,79 @@
 ﻿/* 
-*   NatCam Pro
-*   Copyright (c) 2016 Yusuf Olokoba
+*   NatCam
+*   Copyright (c) 2019 Yusuf Olokoba
 */
 
-namespace NatCamU.Examples {
+namespace NatCam.Examples {
 
 	using UnityEngine;
+	using UnityEngine.UI;
 	using System;
-	using System.Runtime.InteropServices;
-	using Core;
 
 	/*
 	* GreyCam Example
 	* Example showcasing NatCam Preview Data Pipeline
 	* Make sure to run this on the lowest camera resolution as it is heavily computationally expensive
 	*/
-	public class GreyCam : NatCamBehaviour {
+	public class GreyCam : MonoBehaviour {
 
-		private Texture2D texture;
-		private byte[] buffer;
-		const TextureFormat format =
-		#if UNITY_IOS && !UNITY_EDITOR
-		TextureFormat.BGRA32;
-		#else
-		TextureFormat.RGBA32;
-		#endif
-		
-		// Override OnStart so that we can set our own
-		// texture as the preview texture
-		public override void OnStart () {}
-		
-		#if NATCAM_PRO || NATCAM_PROFESSIONAL
+		[Header("Camera")]
+		public bool useFrontCamera;
 
-		public override void OnFrame () {
-			// Declare buffer properties
-			IntPtr handle; int width, height, size;
-			// Read the preview buffer
-			if (!NatCam.PreviewBuffer(out handle, out width, out height, out size)) return;
-			// Create the managed buffer
-			buffer = buffer ?? new byte[size];
-			// Convert to greyscale
-			ConvertToGrey(handle, size);
-			// Create the texture
-			texture = texture ?? new Texture2D(width, height, format, false, false);
-			// Size checking // Ideally, call Texture2D.Destroy and realloc
-			if (texture.width != width || texture.height != height) texture.Resize(width, height);
-			// Load texture data
-			texture.LoadRawTextureData(buffer);
-			// Upload to GPU
-			texture.Apply();
-			// Set RawImage texture
-			preview.texture = texture;
+		[Header("UI")]
+		public RawImage rawImage;
+		public AspectRatioFitter aspectFitter;
+
+		private CameraDevice deviceCamera;
+		private Texture2D previewTexture, greyPreviewTexture;
+
+		void Start () {
+			// Check permission
+			var cameras = CameraDevice.GetDevices();
+			if (cameras == null) {
+				Debug.Log("User has not granted camera permission");
+				return;
+			}
+			// Pick camera
+			CameraDevice deviceCamera = null;
+			foreach (var camera in cameras)
+				if (camera.IsFrontFacing == useFrontCamera) {
+					deviceCamera = camera;
+					break;
+				}
+			if (!deviceCamera) {
+                Debug.LogError("Camera is null. Consider using " + (useFrontCamera ? "rear" : "front") + " camera");
+                return;
+            }
+			// Start preview
+			deviceCamera.PreviewResolution = new Resolution { width = 640, height = 480 };
+			deviceCamera.StartPreview(OnStart, OnFrame);
 		}
-		#endif
+		
+		void OnStart (Texture2D preview) {
+			// Create texture
+			this.previewTexture = preview;
+			rawImage.texture =
+			this.greyPreviewTexture = new Texture2D(preview.width, preview.height, TextureFormat.RGBA32, false, false);
+			// Scale the panel to match aspect ratios
+            aspectFitter.aspectRatio = preview.width / (float)preview.height;
+		}
 
-		/// <summary>
-		/// Convert a four-channel pixel buffer to greyscale
-		/// </summary>
-		/// <param name="nativeBuffer">The native buffer where pixel data is copied from</param>
-		/// <param name="size">The size of the pixel buffer</param>
-		private void ConvertToGrey (IntPtr nativeBuffer, int size) {
-			// Copy the pixel data from the native buffer into our managed bufffer
-			// This is faster than accessing each byte using Marshal.ReadByte
-			Marshal.Copy(nativeBuffer, buffer, 0, size);
-			// Iterate over the buffer
-			for (int i = 0; i < size; i += 4) {
-				// Get channel intensities
+		void OnFrame (long timestamp) {
+			// Convert to greyscale
+			var pixelBuffer = previewTexture.GetRawTextureData();
+			ConvertToGrey(pixelBuffer);
+			// Fill the texture with the greys
+			greyPreviewTexture.LoadRawTextureData(pixelBuffer);
+			greyPreviewTexture.Apply();
+		}
+
+		static void ConvertToGrey (byte[] buffer) {
+			for (int i = 0; i < buffer.Length; i += 4) {
 				byte
 				r = buffer[i + 0], g = buffer[i + 1],
 				b = buffer[i + 2], a = buffer[i + 3],
 				// Use quick luminance approximation to save time and memory
 				l = (byte)((r + r + r + b + g + g + g + g) >> 3);
-				// Set pixels in the buffer
 				buffer[i] = buffer[i + 1] = buffer[i + 2] = l; buffer[i + 3] = a;
 			}
 		}

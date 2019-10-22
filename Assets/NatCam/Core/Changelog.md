@@ -1,3 +1,123 @@
+## NatCam 2.3.0
++ Refactored `DeviceCamera` class to `CameraDevice` for parity with our other API's.
++ The preview texture provided by NatCam is now a `Texture2D`.
++ Removed support for autorotation due to technical constraints. Either lock your app's rotation when the camera is active or stop and restart the camera preview when the orientation changes.
++ Added `CameraDevice.IsExposureLockSupported` property.
++ Added `CameraDevice.IsFocusLockSupported` property.
++ Added `CameraDevice.IsWhiteBalanceLockSupported` property.
++ Changed `CameraDevice.PreviewResolution` and `CameraDevice.PhotoResolution` type from `Vector2Int` to `Resolution`.
++ Deprecated `CameraDevice.Cameras`, `CameraDevice.FrontCamera`, and `CameraDevice.RearCamera`. Use `CameraDevice.GetDevices` instead.
++ Deprecated `CameraDevice.CaptureFrame` method. Use `GetPixels32` or `GetRawTextureData` on the preview texture instead.
++ Fixed camera preview being dark on some Android devices.
++ Fixed framerate being low on some iOS devices.
++ Fixed focus lock being unset after `FocusPoint` was set on Android.
++ NatCam now requires a minimum of iOS 11 on iOS.
++ Reduced minimum requirement on Android to API level 21.
+
+## NatCam 2.2.1
++ Accessing `DeviceCamera.Cameras` will automatically request permissions where necessary. If permissions are denied, the property will return `null`.
++ Fixed rare crash when `DeviceCamera.StopPreview` is called on Android.
++ Fixed the preview going black when the app is reoriented on Android.
++ Fixed `DeviceCamera.TorchMode` not working when the preview is running on Android.
+
+## NatCam 2.2.0
++ Completely overhauled front-end API to provide a more device-oriented approach to handling device cameras. See the README for more info.
++ NatCam now supports running more than one device camera simultaneously on devices that support it.
++ Greatly improved camera preview framerate on lower-end Android devices. As a result, NatCam now requires API level 23 on Android.
++ Added the ability to set the exposure point. See `DeviceCamera.ExposurePoint`.
++ Fixed crash and glitching in camera preview when camera is switched on some Android devices.
++ Fixed bug where photo resolution was clamped to preview resolution on Android.
++ Fixed torch mode setting not working on some Android devices.
++ Changed `DeviceCamera.Framerate` type from `float` to `int`.
++ Refactored NatCam namespace from `NatCamU.Core` to `NatCam`.
++ Removed implicit cast between `DeviceCamera` and `int`.
++ Removed `INatCam.HasPermissions`. Use Unity's `Application.HasUserAuthorization` instead.
++ NatCam now requires Unity 2017.1 at least.
+
+## NatCam 2.1.3
++ Added white balance lock. See `DeviceCamera.WhiteBalanceLock`.
++ Added focus lock. See `DeviceCamera.FocusLock`.
++ Added exposure lock. See `DeviceCamera.ExposureLock`.
++ Deprecated `DeviceCamera.AutofocusEnabled`.
++ Deprecated `DeviceCamera.AutoexposeEnabled`.
++ Fixed bitcode signature error when publishing to iTunes Store.
+
+## NatCam 2.1f2
++ Dropped support for OpenGL ES on iOS. NatCam will only use Metal on iOS.
++ Fixed preview artifacts in some Android devices.
++ Fixed Play Store reporting 0 devices supported for Android apps built with NatCam.
++ Fixed zoom ratio setting not applying in captured photos on Android.
+
+## NatCam 2.1f1
++ The Android backend has been updated to use the `camera2` API introduced in API level 22. As a result, performance has improved and we will be adding more `DeviceCamera` functions.
++ We have simplified the C# API. The `Play`, `Pause`, and `Release` functions have been replaced with clearer `StartPreview` and `StopPreview` functions.
++ We have simplified handling preview events and camera switching by changing `NatCam.StartPreview` to take in the camera and callbacks for the preview start and preview frame events.
++ Deprecated `NatCam.OnStart` and `NatCam.OnFrame` events.
++ Deprecated the `flip` flag in `NatCam.CaptureFrame`. Use OpenCV's `core.flip` function instead.
++ Deprecated `CameraResolution` struct, use `Vector2Int` instead.
++ Deprecated `DeviceCamera.FocusMode` property. Use `DeviceCamera.AutofocusEnabled` boolean instead.
++ Deprecated `FocusMode` enum.
++ Deprecated `DeviceCamera.ExposureMode` property. Use `DeviceCamera.AutoexposeEnabled` boolean instead.
++ Deprecated `ExposureMode` enum.
++ Deprecated `PreviewCallback` delegate type. Use `Action` instead.
++ Deprecated `PhotoCallback` delegate type. Use `Action<Texture2D>` instead.
++ Fixed crash on some Android devices when using `CaptureFrame` function.
++ Refactored `NatCam.IsPlaying` to `NatCam.IsRunning`.
++ Properly dispose of Java objects when on Android.
++ On Android, NatCam now requires at least API level 22 (Android Lollipop).
+
+## NatCam 2.0f5
++ Fixed preview not restarting on Android.
+
+## NatCam 2.0f4
++ Fixed null reference exception when `NatCam.Play` is called on Android.
+
+## NatCam 2.0f3
++ Fixed preview being rotated wrongly in different device orientations.
++ Fixed `FlashMode.Auto` not working on iOS.
+
+## NatCam 2.0f2
++ Greatly improved performance on Android.
++ Native sources will no longer be shared with developers. This is because we have made and will be making a lot of architectural changes, so it is not feasible for us to keep sharing the sources as we iterate.
++ `NatCam.CaptureFrame` is now `void`, because it will always succeed.
++ Fixed lag in camera preview when on some Galaxy S7 (Edge) devices. This lag required the `PreviewData` flag to be turned off. Now the lag has been resolved and the flag has been deprecated.
++ Fixed crash when `NatCam.Release` is called multiple times on Android.
++ Fixed front camera preview being upside down on Nexus 6P.
+
+## NatCam 2.0f1
++ We have deprecated NatCam Core! From now on, NatCam Pro will be the standard NatCam spec.
++ We have deprecated video recording because we introduced a dedicated video recording API, [NatCorder](https://assetstore.unity.com/packages/tools/integration/natcorder-video-recording-api-102645).
++ We have renamed NatCam Pro to NatCam.
++ Refactored `NatCam.PreviewFrame` to `NatCam.CaptureFrame`.
++ Refactored `Resolution` struct to `CameraResolution` to avoid conflict with UnityEngine.
++ Added `flip` flag to `NatCam.CaptureFrame` for working with OpenCV where image must be vertically inverted.
++ Preview data format is now `RGBA32` on all platforms.
++ Deprecated `NatCam.PreviewBuffer` function. Use `NatCam.CaptureFrame` instead.
++ Deprecated `NatCam.PreviewMatrix` function. Use OpenCVForUnity's `Utils.texture2DtoMat` function instead.
++ Deprecated `NatCamBehaviour` helper class. Derive from `MonoBehaviour` and start NatCam manually.
++ Deprecated VisionCam example.
++ Deprecated `NatCam.Verbose` flag.
++ Removed `NATCAM_CORE` and `NATCAM_PRO` definitions.
+
+## NatCam Core 1.6f2
++ All platforms will now return photos upright! This means that the `Orientation` enum, the `NatCamPanel` component, and the `Utilities::RotateImage` functions have been deprecated as they are not needed anymore.
++ Added `Resolution` struct. Use this for `DeviceCamera` resolution handling.
++ Changed `PhotoCallback` signature to only take a `Texture2D`, removed `Orientation`.
++ Fixed rare crash when `CapturePhoto` is called on Android.
++ Fixed preview resolution setting not taking effect on Legacy backend.
++ Deprecated `Facing` enum. Use `DeviceCamera.IsFrontFacing` instead.
++ Deprecated `ResolutionPreset` enum.
++ Deprecated `FrameratePreset` enum.
++ Deprecated `NatCamFocuser` component. It is now included as part of the MiniCam example.
++ Refactored `DeviceCamera.TorchMode` to `DeviceCamera.TorchEnabled`.
++ *Everything below*
+
+## NatCam Pro 1.6f2
++ Made `NatCam.PreviewBuffer` thread-safe.
++ On Android, videos will now be recorded in the app's documents directory instead of in external storage.
++ Fixed crash when running NatCam Pro on Google Pixel 2.
++ *Everything below*
+
 ## NatCam Core 1.6f1
 + On Android, we have introduced an all new rendering pipeline. Features include:
     + Even faster NatCam preview rendering. NatCam now contributes **0ms** to your application's frame time
@@ -7,29 +127,45 @@
 + Made IDispatch module independent of NatCam. You can now copy the IDispatch sources into any project.
 + Improved `NatCam.CapturePhoto` memory efficiency on Android and Legacy backend.
 + Captured photo texture format can now be different on different platforms.
++ Added `NatCamPanel` component for displaying photos upright on UI panels.
 + Redesigned MiniCam example UI.
 + Raised minimum Android API level to API level 18 (Android 4.3).
 + Added `TorchMode` enum.
-+ Fixed crash caused by NatCamBehaviour when switching scenes.
++ Fixed crash caused by `NatCamBehaviour` when switching scenes.
 + Fixed bug on Android where camera resolution was changed after capturing photo.
 + Fixed bug on iOS where camera is not resumed when app is suspended and resumed.
 + Fixed bug on iOS where some photos become distorted.
++ Fixed exception when `CapturePhoto` is called on Android O.
++ Deprecated `NatCamPreview` component. For scaling, use UnityEngine.UI's `AspectRatioFitter`.
 + Deprecated `Switch` enum.
 + Deprecated `ZommMode` enum.
++ Deprecated `ScaleMode` enum.
 + Deprecated `FocusMode.MacroFocus`.
 + Deprecated `FocusMode.SoftFocus`.
-+ Deprecated `ScaleMode.FillScreen`.
 + Renamed native symbols to avoid clashes with other plugins.
 + Refactored `ResolutionPreset.HighestResolution` to `ResolutionPreset.Highest`.
 + Refactored `ResolutionPreset.MediumResolution` to `ResolutionPreset.Medium`.
 + Refactored `ResolutionPreset.LowestResolution` to `ResolutionPreset.Lowest`.
-+ Refactored `ScaleMode.FillView` to `ScaleMode.Fill`.
-+ Refactored `ScaleMode.AdjustWidth` to `ScaleMode.ScaleWidth`.
-+ Refactored `ScaleMode.AdjustHeight` to `ScaleMode.ScaleHeight`.
-+ Reimplemented NatCamPreview to scale the UI panel corners instead of vertices.
 + Changed `NatCam.Verbose` type to boolean.
-+ Moved `ScaleMode` enum to 
-+ Exposed NatCamPreview RawImage with `NatCamPreview.image`.
++ *Everything below*
+
+## NatCam Pro 1.6f1
++ NatCam Professional is now NatCam Pro.
++ Updated the ReplayCam example to be more modern.
++ NatCam Extended has been deprecated, including the SavePhoto API and metadata detection.
++ Added `Configuration` struct for setting video recording options.
++ Exposed keyframe interval for configuring video encoders.
++ Reduced `NatCamLegacy` memory footprint.
++ Fixed bug where `NatCam.PreviewBuffer`, `PreviewFrame`, and `PreviewMatrix` failed in the OnStart event.
++ Fixed iOS-recorded video appearing wrongly when viewed on Windows or Android.
++ Fixed rare crash on iOS when recording is stopped.
++ Fixed `NullPointerException` when `NatCam.StopRecording` is called on Android.
++ Deprecated `NatCamToMatHelper` component for OpenCV.
++ Deprecated `INatCam.SaveVideo(..)`.
++ Renamed native symbols to avoid clashes with other plugins.
++ Improved GreyCam example performance.
++ On iOS, microphone permission will only be requested if using video recording with audio.
++ Renamed `NATCAM_PROFESSIONAL` scripting definition symbol to `NATCAM_PRO`
 + *Everything below*
 
 ## NatCam Core 1.5f3
@@ -102,6 +238,30 @@
 + Implemented IDisposable interface for IDispatch.
 + *Everything below*
 
+## NatCam Pro 1.5f3
++ Added NatCam.PreviewMatrix(..) to greatly improve memory efficiency (so as not to allocate each time it is called).
++ Added NatCam.PreviewFrame(..) to greatly improve memory efficiency (so as not to allocate each time it is called).
++ Added NatCam.PreviewBuffer(..) overload that takes managed Color32[].
++ Added VisionCam example to demonstrate using NatCam with OpenCVForUnity.
++ Added ReadablePreview flag on NatCamAndroid. This is a workaround for the GPU driver bug that caused lag on the S7 Edge.
++ Added Configuration struct for setting video recording options.
++ Added bitcode support on iOS.
++ Added NatCamToMatHelper script for OpenCV/DLibFaceLandmarkDetector.
++ Exposed bitrate for configuring video encoders.
++ Exposed keyframe interval for configuring video encoders.
++ Reduced NatCamLegacy memory footprint.
++ Fixed crash when NatCam.StopRecording is called on Android.
++ Fixed crash when NatCam.StopRecording is called on iOS.
++ Fixed NatCam.PreviewMatrix having incorrect dimensions.
++ Fixed iOS-recorded video appearing wrongly when viewed on Windows or Android.
++ Fixed null reference exception when NatCam.PreviewBuffer is called on NatCamLegacy.
++ Fixed incorrect colors when using VisionCam example on iOS.
++ Deprecated NatCam.PreviewMatrix property.
++ Deprecated NatCam.PreviewFrame property.
++ Deprecated Utilities.SaveVideoToGallery. Use NatCam.Implementation.SaveVideo(string, SaveMode) instead.
++ Renamed native symbols to avoid clashes with other plugins.
++ *Everything below*
+
 ## NatCam Core 1.5b4
 + NatCam.OnStart is now called when cameras are changed and when the orientation is changed.
 + Added a unified orientation pipeline for captured photos.
@@ -138,6 +298,17 @@
 + NatCamView2D shader has been refactored to NatCamTransform2D.
 + IDispatch has been further modularized.
 + IDispatch will no more invoke a delegate more than once per Update.
++ *Everything below*
+
+## NatCam Pro 1.5b4
++ Added ReadablePreview flag on NatCamAndroid. This is a workaround for the GPU driver bug that caused lag on the S7 Edge.
++ Added bitcode support on iOS.
++ Added NatCamToMatHelper script for OpenCV/DLibFaceLandmarkDetector.
++ Fixed crash when NatCam.StopRecording is called on Android.
++ Fixed null reference exception when NatCam.PreviewBuffer is called on NatCamLegacy.
++ Deprecated Utilities.SaveVideoToGallery. Use NatCam.Implementation.SaveVideo(string, SaveMode) instead.
++ Fixed incorrect colors when using VisionCam example on iOS.
++ Deprecated MotionCam example.
 + *Everything below*
 
 ## NatCam Core 1.5b3
@@ -182,6 +353,18 @@
 + Implemented IDisposable interface for IDispatch.
 + *Everything below*
 
+## NatCam Pro 1.5b3
++ Added NatCam.PreviewMatrix(..) to greatly improve memory efficiency (so as not to allocate each time it is called).
++ Added NatCam.PreviewFrame(..) to greatly improve memory efficiency (so as not to allocate each time it is called).
++ Added VisionCam example to demonstrate using NatCam with OpenCVForUnity.
++ Added MotionCam example to demonstrate using NatCam.PreviewFrame.
++ Exposed bitrates for configuring video encoders.
++ Deprecated NatCam.PreviewMatrix property.
++ Deprecated NatCam.PreviewFrame property.
++ Fixed crash when NatCam.StopRecording is called on iOS.
++ Fixed NatCam.PreviewMatrix having incorrect dimensions.
++ *Everything below*
+
 ## NatCam Core 1.5f2
 + Added master switches to enable and disable the Extended and Professional spec in NatCamLinker.
 + Added support for getting DeviceCamera.PhotoResolution on NatCamLegacy.
@@ -195,6 +378,13 @@
 + Fixed iOS 10 crash by adding NSMicrophoneUsageDescription.
 + Fixed endless refresh when using plugins that used custom platform macros like Cross Platform Native Plugins.
 + Fixed 'requested build target group (15) doesn't exist' error in NatCamLinker.
++ *Everything below*
+
+## NatCam Pro 1.5f2
++ Added ReplayCam video recording example with recorded video playback.
++ Added flag to specify whether audio ppermission should be requested and if audio should be recorded.
++ Fixed crash when preview starts on Android devices running on OpenGLES 3.
++ Fixed microphone hardware requirement on Android.
 + *Everything below*
 
 ## NatCam Core 1.5f1
@@ -245,6 +435,18 @@
 + Reduced the amount of text that NatCam logs.
 + Changed Android API minimum requirement to API level 15.
 + Changed ResolutionPreset.HighestResolution to default to FullHD when calling DeviceCamera.SetPreviewResolution(ResolutionPreset).
+
+## NatCam Pro 1.5f1
++ Video recording is now available on platforms that support it.
++ Added NatCam.PreviewBuffer(...) that works on all platforms, even when using WebCamTexture.
++ Added Utilities.NatCamUtilities.SaveVideoToGallery to save recorded videos to device gallery.
++ On Android, the native preview update and preview data dimensions now respects the orientation of the app.
++ On Android, NatCam.PreviewFrame is no more skewed depending on app orientation.
++ Deprecated the concept of Readable preview. Preview data is now available on demand.
++ Deprecated OnNativePreviewUpdate event.
++ Deprecated ComponentBuffer enum.
++ Reimplemented NatCam.PreviewMatrix to be on demand like NatCam.PreviewFrame.
++ Renamed OPENCV_DEVELOPER_MODE macro to OPENCV_API
 
 ## NatCam 1.4f1:
 *NOT RELEASED*
