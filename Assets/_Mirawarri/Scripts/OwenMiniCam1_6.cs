@@ -14,7 +14,7 @@ namespace NatCamU.Examples
     using System;
     using System.Collections;
 
-    public class OwenMiniCam : NatCamBehaviour
+    public class OwenMiniCam1_6 : NatCamBehaviour
     {
 
         [Header("UI")]

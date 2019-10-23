@@ -5,7 +5,6 @@ using SA.Foundation.Utility;
 using SA.CrossPlatform.Social;
 using SA.CrossPlatform.UI;
 using SA.iOS.Social;
-using SA.Foundation.Utility;
 
 using System;
 using System.Collections;
@@ -23,7 +22,7 @@ using CompositorU;
 using DigitalRubyShared; // Fingers
 using UnityEngine.Analytics;
 
-public class OwenCam : OwenMiniCam /*, IPointerUpHandler*/
+public class OwenCam : OwenMiniCam1_6 /*, IPointerUpHandler*/
 {
 
     private static bool DEBUG = true;
