@@ -876,7 +876,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 19.399963, y: -13.309998}
+  m_AnchoredPosition: {x: 19.399902, y: -13.310059}
   m_SizeDelta: {x: 97, y: 85}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1828672400
@@ -1001,7 +1001,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c5e1e781fdb845e1afc78446a054032, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useFrontCamera: 0
+  useFrontCamera: 1
   rawImage: {fileID: 187799906}
   aspectFitter: {fileID: 187799908}
   flashText: {fileID: 323461898}

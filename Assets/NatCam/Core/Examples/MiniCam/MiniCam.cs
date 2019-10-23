@@ -43,14 +43,11 @@ namespace NatCam.Examples
             }
             // Pick camera
             for (var i = 0; i < cameras.Length; i++)
-            {
-                Debug.Log(i + ". " + cameras[i]);
-                // if (cameras[i].IsFrontFacing == useFrontCamera)
-                // {
-                activeCamera = i;
-                break;
-                // }
-            }
+                if (cameras[i].IsFrontFacing == useFrontCamera)
+                {
+                    activeCamera = i;
+                    break;
+                }
             if (activeCamera == -1)
             {
                 Debug.LogError("Camera is null. Consider using " + (useFrontCamera ? "rear" : "front") + " camera");
